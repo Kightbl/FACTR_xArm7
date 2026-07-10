@@ -24,7 +24,7 @@ arm_teleop:
   initialization:
     calibration_joint_pos: [0.0, -0.7854, 0.0, -2.356, 0.0, 1.57, 0.0]
     initial_match_joint_pos: [0.0, -0.7854, 0.0, -2.356, 0.0, 1.57, 0.0]
-#[0.0, -0.59865, 0.0, 0.24435, 0.0, 0.84229, 0.0]
+# Zero position of x arm converted to radians: [0.0, -0.59865, 0.0, 0.24435, 0.0, 0.84229, 0.0]
 
 gripper_teleop:
   actuation_range: 1.0
