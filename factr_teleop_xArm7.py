@@ -513,30 +513,7 @@ class FACTRTeleop(Node, ABC):
         Raises:
             NotImplementedError: If the method is not implemented in a subclass.
         """              
-        #Follower joint states
-        self.follower_joint_pos = np.zeros(self.num_arm_joints)
-        self.external_torque = np.zeros(self.num_arm_joints)
-        self.gripper_feedback_val = 0.0
-
-        self.follower_state_sub = self.create_subscription(
-            JointState,
-            '/xarm/joint_states',
-            self._follower_state_callback,
-            10
-        )
-        self.external_torque_sub = self.create_subscription(
-            RobotMsg,
-            '/xarm/robot_states',
-            self._torque_callback,
-            10
-        )
-
-        #Publisher to command arm
-        self.joint_cmd_pub = self.create_publisher(
-            JointState,
-            '/xarm/set_servo_angle',
-            10
-        )
+        
         pass
 
 
@@ -554,7 +531,6 @@ class FACTRTeleop(Node, ABC):
         Raises:
             NotImplementedError: If the method is not implemented in a subclass.
         """
-        return self.external_torque
         pass
 
 
@@ -575,7 +551,6 @@ class FACTRTeleop(Node, ABC):
         Raises:
             NotImplementedError: If the method is not implemented in a subclass.
         """
-        return self.gripper_feedback_val
         pass
 
 
@@ -600,8 +575,6 @@ class FACTRTeleop(Node, ABC):
         Raises:
             NotImplementedError: If the method is not implemented in a subclass.
         """
-        kp = 0.5
-        return -kp * gripper_feedback
         pass
 
 
@@ -618,10 +591,6 @@ class FACTRTeleop(Node, ABC):
         Raises:
             NotImplementedError: If the method is not implemented in a subclass.
         """
-        msg = JointState()
-        msg.header.stamp = self.get_clock().now().to_msg()
-        msg.position = leader_arm_pos.tolist() + [leader_gripper_pos]
-        self.joint_cmd_pub.publish(msg)
         pass
 
 
