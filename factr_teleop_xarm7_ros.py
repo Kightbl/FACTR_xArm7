@@ -56,8 +56,8 @@ class FACTRTeleopXArm7ROS(FACTRTeleop):
         self.latest_joint_state = None
 
         # Rate at which set_servo_angle_j is actually called (Hz). Keep within
-        # xarm_api's suggests 100-250Hz streaming range
-        #FACTR uses 500Hz but xArm7 is not intended to operate at that speed
+        # xarm_api suggests 100-250Hz streaming range
+        #FACTR uses 500 Hz, but xArm7 is not intended to operate at that speed
         self.command_rate_hz = self.config["arm_teleop"].get("xarm_command_rate_hz", 200.0)
 
         self._pending_target_lock = threading.Lock()
@@ -72,9 +72,8 @@ class FACTRTeleopXArm7ROS(FACTRTeleop):
         if self.name not in ("left", "right"):
             raise ValueError(f"Invalid robot name '{self.name}'. Expected 'left' or 'right'.")
 
-        # Namespace of the xarm_api driver for this arm -- set this to match
-        # however you launched xarm7_driver.launch.py (single arm: usually
-        # just "/xarm"; dual arm: whatever hw_ns you assigned per side).
+        # Namespace of the xarm_api driver for this arm set to match
+        # launched xarm7_driver.launch.py (single arm: usually "/xarm").
         self.xarm_ns = self.config["arm_teleop"].get("xarm_ros_namespace", "/xarm")
 
         #Service clients: driver setup + streaming joint commands
@@ -144,7 +143,7 @@ class FACTRTeleopXArm7ROS(FACTRTeleop):
             "set_state(ready)"
         )
 
-        #Block until real joint state is recieved
+        #Block until real joint state is received
 
         if self.enable_torque_feedback:
             self.obs_xarm7_torque_pub = self.create_publisher(
@@ -163,9 +162,7 @@ class FACTRTeleopXArm7ROS(FACTRTeleop):
 
     def _call_service_blocking(self, client, request, description, timeout_sec=5.0):
         """
-        Call a service and actually wait for + validate the result, by
-        spinning this node's own executor (safe to call before main() starts
-        spinning, since nothing else is spinning yet).
+        Call a service and actually wait for + validate the result
         """
         future = client.call_async(request)
         rclpy.spin_until_future_complete(self, future, timeout_sec=timeout_sec)
