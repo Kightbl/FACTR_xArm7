@@ -93,11 +93,7 @@ class FACTRTeleopXArm7ROS(FACTRTeleop):
                 self.get_logger().info(f"Waiting for xarm_api service '{name}'...")
 
         #Enable arm, put it in joint-servo (servoj) mode
-        '''
-        self.motion_enable_client.call_async(SetInt16ById.Request(id=8, data=1))
-        self.set_mode_client.call_async(SetInt16.Request(data=1))  # 1 = servoj mode
-        self.set_state_client.call_async(SetInt16.Request(data=0))
-        '''
+
         #Subscribe to the driver's joint state feedback (position, velocity, effort)
         self.xarm_joint_state_sub = self.create_subscription(
             JointState,
