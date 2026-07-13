@@ -204,7 +204,6 @@ class FACTRTeleopXArm7ROS(FACTRTeleop):
 
         tau_external_raw = tau_measured - tau_model
 
-        # EMA filter
         tau_external_filtered = (
             self.torque_est_ema_beta * self.prev_external_torque_est
             + (1 - self.torque_est_ema_beta) * tau_external_raw
