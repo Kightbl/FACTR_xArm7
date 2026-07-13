@@ -190,11 +190,29 @@ class FACTRTeleopXArm7ROS(FACTRTeleop):
     def get_leader_arm_external_joint_torque(self):
         if self.latest_joint_state is None or not self.latest_joint_state.effort:
             external_torque = np.zeros(NUM_ARM_JOINTS)
-        else:
-            external_torque = np.array(self.latest_joint_state.effort[:NUM_ARM_JOINTS])
-        if self.enable_torque_feedback:
             self.obs_xarm7_torque_pub.publish(create_array_msg(external_torque))
-        return external_torque
+            return external_torque
+
+        q = np.array(self.latest_joint_state.position[:NUM_ARM_JOINTS])
+        qdot = np.array(self.latest_joint_state.velocity[:NUM_ARM_JOINTS]) \
+            if self.latest_joint_state.velocity else np.zeros(NUM_ARM_JOINTS)
+        tau_measured = np.array(self.latest_joint_state.effort[:NUM_ARM_JOINTS])
+
+        qddot = np.zeros(NUM_ARM_JOINTS)
+
+        tau_model = pin.rnea(self.follower_model, self.follower_data, q, qdot, qddot)
+
+        tau_external_raw = tau_measured - tau_model
+
+        # EMA filter
+        tau_external_filtered = (
+            self.torque_est_ema_beta * self.prev_external_torque_est
+            + (1 - self.torque_est_ema_beta) * tau_external_raw
+        )
+        self.prev_external_torque_est = tau_external_filtered
+
+        self.obs_xarm7_torque_pub.publish(create_array_msg(tau_external_filtered))
+        return tau_external_filtered
 
     def get_leader_gripper_feedback(self):
         return self.gripper_external_torque
