@@ -12,11 +12,12 @@ dynamixel:
   joint_signs: [-1, 1, -1, 1, 1, 1, 1, -1]
 
 arm_teleop:
-  leader_urdf: "xArm7.urdf"
+  leader_urdf: "xArm7_leader.urdf"
+  follower_urdf: "xarm7_follower.urdf"
   xarm_ros_namespace: "/xarm"
   num_arm_joints: 7
   arm_joint_limits_safety_margin: 0.1
-  xarm_command_rate_hz: 200
+  xarm_command_rate_hz: 100
 
   arm_joint_limits_max: [ 6.2832,  2.0944,  6.2832,  3.9270,  6.2832,  3.1416,  6.2832]
   arm_joint_limits_min: [-6.2832, -2.0944, -6.2832, -0.1920, -6.2832, -1.6965, -6.2832]
@@ -24,13 +25,13 @@ arm_teleop:
   initialization:
     calibration_joint_pos: [0.0, -0.7854, 0.0, -2.356, 0.0, 1.57, 0.0]
     initial_match_joint_pos: [0.0, -0.7854, 0.0, -2.356, 0.0, 1.57, 0.0]
-# Zero position of x arm converted to radians: [0.0, -0.59865, 0.0, 0.24435, 0.0, 0.84229, 0.0]
+#[0.0, -0.59865, 0.0, 0.24435, 0.0, 0.84229, 0.0]
 
 gripper_teleop:
   actuation_range: 1.0
 
 controller:
-  frequency: 200
+  frequency: 100
   torque_feedback:
     enable: True
     gain: 1.0
