@@ -13,7 +13,7 @@ dynamixel:
 
 arm_teleop:
   # URDF used for creating leader arm dynamics model to compute gravity compensation
-  leader_urdf: "xArm7.urdf"
+  leader_urdf: "xArm7_leader.urdf"
   num_arm_joints: 7
   #arm_joint_limits_max: [2.8973, 1.7628, 2.8973, 2.356, 2.8973, 3.14, 2.8973]
   arm_joint_limits_max: [6.28, 2.09, 6.28, 3.93, 6.28, 3.14, 6.28]
