@@ -26,7 +26,9 @@ ASSUMPTIONS (verify against your installed xarm_msgs version):
   - /{ns}/set_mode, /{ns}/set_state use xarm_msgs/srv/SetInt16
   - /{ns}/joint_states is sensor_msgs/msg/JointState (position/velocity/effort)
 """
-
+import os
+import pinocchio as pin
+from python_utils.utils import get_workspace_root
 import numpy as np
 import rclpy
 import threading
@@ -50,14 +52,30 @@ class FACTRTeleopXArm7ROS(FACTRTeleop):
 
     def __init__(self):
         super().__init__()
+        #Follower arm model
+        follower_urdf_path = os.path.join(
+            get_workspace_root(),
+            'src/factr_teleop/factr_teleop/urdf/',
+            self.config["arm_teleop"]["follower_urdf"]
+        )
+        follower_urdf_dir = os.path.dirname(follower_urdf_path)
+        self.follower_model, _, _ = pin.buildModelsFromUrdf(
+            filename=follower_urdf_path, package_dirs=follower_urdf_dir
+        )
+        self.follower_data = self.follower_model.createData()
+        self.get_logger().info(f"Follower pinocchio joint order: {list(self.follower_model.names)}")
+        self.torque_est_ema_beta = self.config["controller"]["torque_feedback"].get("torque_est_ema_beta", 0.2)
+        self.prev_external_torque_est = np.zeros(NUM_ARM_JOINTS)
+
+
         self.gripper_feedback_gain = self.config["controller"]["gripper_feedback"]["gain"]
         self.gripper_torque_ema_beta = self.config["controller"]["gripper_feedback"]["ema_beta"]
         self.gripper_external_torque = 0.0
         self.latest_joint_state = None
 
         # Rate at which set_servo_angle_j is actually called (Hz). Keep within
-        # xarm_api suggests 100-250Hz streaming range
-        #FACTR uses 500 Hz, but xArm7 is not intended to operate at that speed
+        # xarm_api's suggests 100-250Hz streaming range
+        #FACTR uses 500Hz but xArm7 is not intended to operate at that speed
         self.command_rate_hz = self.config["arm_teleop"].get("xarm_command_rate_hz", 200.0)
 
         self._pending_target_lock = threading.Lock()
@@ -72,8 +90,9 @@ class FACTRTeleopXArm7ROS(FACTRTeleop):
         if self.name not in ("left", "right"):
             raise ValueError(f"Invalid robot name '{self.name}'. Expected 'left' or 'right'.")
 
-        # Namespace of the xarm_api driver for this arm set to match
-        # launched xarm7_driver.launch.py (single arm: usually "/xarm").
+        # Namespace of the xarm_api driver for this arm -- set this to match
+        # however you launched xarm7_driver.launch.py (single arm: usually
+        # just "/xarm"; dual arm: whatever hw_ns you assigned per side).
         self.xarm_ns = self.config["arm_teleop"].get("xarm_ros_namespace", "/xarm")
 
         #Service clients: driver setup + streaming joint commands
@@ -92,7 +111,11 @@ class FACTRTeleopXArm7ROS(FACTRTeleop):
                 self.get_logger().info(f"Waiting for xarm_api service '{name}'...")
 
         #Enable arm, put it in joint-servo (servoj) mode
-
+        '''
+        self.motion_enable_client.call_async(SetInt16ById.Request(id=8, data=1))
+        self.set_mode_client.call_async(SetInt16.Request(data=1))  # 1 = servoj mode
+        self.set_state_client.call_async(SetInt16.Request(data=0))
+        '''
         #Subscribe to the driver's joint state feedback (position, velocity, effort)
         self.xarm_joint_state_sub = self.create_subscription(
             JointState,
@@ -143,7 +166,7 @@ class FACTRTeleopXArm7ROS(FACTRTeleop):
             "set_state(ready)"
         )
 
-        #Block until real joint state is received
+        #Block until real joint state is recieved
 
         if self.enable_torque_feedback:
             self.obs_xarm7_torque_pub = self.create_publisher(
@@ -162,7 +185,9 @@ class FACTRTeleopXArm7ROS(FACTRTeleop):
 
     def _call_service_blocking(self, client, request, description, timeout_sec=5.0):
         """
-        Call a service and actually wait for + validate the result
+        Call a service and actually wait for + validate the result, by
+        spinning this node's own executor (safe to call before main() starts
+        spinning, since nothing else is spinning yet).
         """
         future = client.call_async(request)
         rclpy.spin_until_future_complete(self, future, timeout_sec=timeout_sec)
@@ -204,14 +229,15 @@ class FACTRTeleopXArm7ROS(FACTRTeleop):
 
         tau_external_raw = tau_measured - tau_model
 
+        # EMA filter
         tau_external_filtered = (
             self.torque_est_ema_beta * self.prev_external_torque_est
             + (1 - self.torque_est_ema_beta) * tau_external_raw
         )
         self.prev_external_torque_est = tau_external_filtered
-
-        self.obs_xarm7_torque_pub.publish(create_array_msg(tau_external_filtered))
-        return tau_external_filtered
+        tau_external_corrected = tau_external_filtered * self.joint_signs[:NUM_ARM_JOINTS]
+        self.obs_xarm7_torque_pub.publish(create_array_msg(tau_external_corrected))
+        return tau_external_corrected
 
     def get_leader_gripper_feedback(self):
         return self.gripper_external_torque
