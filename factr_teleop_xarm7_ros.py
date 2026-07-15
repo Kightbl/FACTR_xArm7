@@ -13,7 +13,7 @@ Prerequisites:
      alongside your factr_teleop workspace.
   2. Launch the vendor driver FIRST:
        ros2 launch xarm_api xarm7_driver.launch.py robot_ip:=192.168.1.XXX \
-           report_type:=rich
+           report_type:=(rich or dev)
      (bump report_type/rate so /xarm/joint_states updates fast enough for your
      control loop -- default is 5Hz, your yaml runs controller.frequency: 200)
   3. If running two arms (left/right), the driver needs separate namespaces --
