@@ -15,7 +15,7 @@ Prerequisites:
        ros2 launch xarm_api xarm7_driver.launch.py robot_ip:=192.168.1.XXX \
            report_type:=rich
      (bump report_type/rate so /xarm/joint_states updates fast enough for your
-     control loop -- default is 5Hz, your yaml runs controller.frequency: 500)
+     control loop -- default is 5Hz, your yaml runs controller.frequency: 200)
   3. If running two arms (left/right), the driver needs separate namespaces --
      check xarm_api's launch args (e.g. hw_ns / robot_ip per instance) and set
      `ros_namespace` in your yaml accordingly.
