@@ -492,7 +492,6 @@ class FACTRTeleop(Node, ABC):
         js.header.stamp = self.get_clock().now().to_msg()
         js.header.frame_id = 'base_link'
         js.name = [f'joint{i+1}' for i in range(self.num_arm_joints)] + ['joint8']
-        xarm_pos = self.franka_to_xarm(leader_arm_pos)
         js.position = leader_arm_pos.tolist() + [float(self.gripper_pos)]
         self.joint_state_pub.publish(js)
         self.update_communication(leader_arm_pos, leader_gripper_pos)
@@ -601,15 +600,4 @@ class FACTRTeleop(Node, ABC):
         #)
         self.sim_joint_vel = np.zeros(7)
 
-    def franka_to_xarm(self, q):
-        q = np.array(q)
-        q_out = np.zeros_like(q)
-        q_out[0] = q[0]
-        q_out[1] = q[1]
-        q_out[2] = q[2]
-        q_out[3] = q[3]
-        q_out[4] = q[4]
-        q_out[5] = q[5]
-        q_out[6] = q[6]
-
-        return np.mod(q_out + np.pi, 2*np.pi) - np.pi
+   
