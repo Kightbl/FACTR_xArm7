@@ -39,10 +39,7 @@ def create_array_msg(data):
 class FACTRTeleopXArm7ZMQ(FACTRTeleop):
     """
     Communication with the xArm7 follower over ZMQ, matching the pattern used
-    for Franka. The torque-residual math (pin.rnea against the follower URDF)
-    lives entirely in xarm7_zmq_server.py, NOT here -- this class just trusts
-    and forwards whatever arrives on the torque socket, exactly like
-    FACTRTeleopFrankaZMQ does for the Franka arm.
+    for Franka. 
     """
 
     def __init__(self):
