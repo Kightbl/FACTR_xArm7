@@ -16,16 +16,7 @@ Usage (right arm, matching this workspace's existing global_configs.py):
 
 These three addresses must match xarm7_left_real_zmq_addresses /
 xarm7_right_real_zmq_addresses in python_utils/global_configs.py, which
-already exists in this workspace. NOTE: --ip (the SDK's connection target)
-is a separate concept from the *_ip_address values in that config file --
-the latter are the ZMQ server host's own network address (what it binds
-to), which is not guaranteed to be the same machine/IP as the xArm7
-controller itself. Confirm this for your physical setup rather than
-assuming --ip == xarm7_right_ip_address.
-
-NOTE ON MESH-FREE MODEL LOADING: this uses pin.buildModelFromUrdf (singular),
-not buildModelsFromUrdf, so mesh file paths never need to resolve -- only the
-URDF's <inertial> tags matter for RNEA.
+already exists in this workspace.
 """
 import argparse
 import signal
