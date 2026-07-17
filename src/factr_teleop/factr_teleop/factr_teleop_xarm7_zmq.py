@@ -2,44 +2,20 @@
 """
 factr_teleop_xarm7_zmq.py
 --------------------------
-FACTRTeleop subclass for xArm7 that mirrors factr_teleop_franka_zmq.py's
-architecture: communication with the follower happens over ZMQ, talking to
-a separate xarm7_zmq_server.py process that owns the actual hardware
-connection (via the xArm-Python-SDK) and does the RNEA torque-residual
-computation.
-
-This replaces the earlier factr_teleop_xarm7_ros.py approach, which talked
-to the xArm7 through the xarm_ros2/xarm_api driver's ROS2 services. That
-approach carried three real risks this one avoids:
-  - /xarm/joint_states report rate defaulting to 5Hz regardless of your
-    control loop frequency
-  - xarm_msgs service/message field assumptions that vary across
-    xarm_ros2 versions
-  - 200Hz round-trip ROS service calls for streaming, rather than a direct
-    SDK call
 
 IMPORTANT: run xarm7_zmq_server.py FIRST. This node will block waiting for
 its first external-torque message otherwise (see set_up_communication).
 
 Uses xarm7_left_real_zmq_addresses / xarm7_right_real_zmq_addresses from
-python_utils/global_configs.py (already defined in this workspace). Per that
-file, joint_pos_cmd_pub binds on sim_desktop_ip_address (the leader/desktop
-machine -- this class binds it), while joint_state_sub / joint_torque_sub
-bind on xarm7_<left|right>_ip_address (the arm-side machine -- the server
-binds those). Launch xarm7_zmq_server.py on the arm-side machine with
+python_utils/global_configs.py. Launch xarm7_zmq_server.py on the arm-side machine with
 matching addresses, e.g. for the right arm:
 
     python3 xarm7_zmq_server.py --ip <xarm7 controller IP> --urdf .../xarm7.urdf \\
         --cmd_addr tcp://<sim_desktop_ip_address>:2098 \\
-        --state_addr tcp://192.168.0.205:3099 \\
-        --torque_addr tcp://192.168.0.205:3087
+        --state_addr tcp://192.168.1.XXX:3099 \\
+        --torque_addr tcp://192.168.1.XXX:3087
 
-NOTE: --ip here is the xArm7 controller's own IP for the SDK connection
-(the same one you'd pass to xarm7_driver.launch.py's robot_ip:= arg in the
-old ROS2 approach) -- it is NOT necessarily the same as
-xarm7_right_ip_address in global_configs.py, which is the ZMQ *server host's*
-network address. Confirm whether these happen to be the same machine/IP in
-your setup before assuming so.
+
 """
 import time
 import numpy as np
