@@ -1,5 +1,6 @@
 name: right
 
+
 dynamixel:
   # USB port name given by the command: ls /dev/serial/by-id/
   dynamixel_port: "usb-FTDI_USB__-__Serial_Converter_FTAKRKXH-if00-port0"
