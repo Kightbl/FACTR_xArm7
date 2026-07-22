@@ -11,8 +11,8 @@ Usage (right arm, matching this workspace's existing global_configs.py):
       --ip <xarm7 controller IP -- SDK connection, e.g. from launch args> \\
       --urdf /path/to/xarm7.urdf \\
       --cmd_addr tcp://<sim_desktop_ip_address>:2098 \\
-      --state_addr tcp://192.168.0.205:3099 \\
-      --torque_addr tcp://192.168.0.205:3087
+      --state_addr tcp://192.168.1.205:3099 \\
+      --torque_addr tcp://192.168.1.205:3087
 
 These three addresses must match xarm7_left_real_zmq_addresses /
 xarm7_right_real_zmq_addresses in python_utils/global_configs.py, which
